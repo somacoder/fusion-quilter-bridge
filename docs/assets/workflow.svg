@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="310" viewBox="0 0 1280 310" role="img" aria-labelledby="title desc">
+<title id="title">Conversion workflow</title><desc id="desc">Forward: Fusion to KiCad to Quilter. Return: download, translate, apply to the original Fusion PCB.</desc>
+<rect width="1280" height="310" rx="18" fill="#F4F6FA"/>
+<g font-family="Arial,sans-serif">
+<text x="42" y="44" font-size="13" letter-spacing="2" fill="#52637B">THE ROUND TRIP / LOCAL CONVERSION, DELIBERATE CLOUD HANDOFF</text>
+<g fill="#ffffff" stroke="#D3DBE7" stroke-width="2">
+<rect x="42" y="76" width="308" height="112" rx="12"/>
+<rect x="486" y="76" width="308" height="112" rx="12"/>
+<rect x="930" y="76" width="308" height="112" rx="12"/>
+</g>
+<g fill="#011F5B" text-anchor="middle">
+<text x="196" y="119" font-family="Georgia,serif" font-size="31">Fusion Electronics</text>
+<text x="640" y="119" font-family="Georgia,serif" font-size="31">KiCad 9</text>
+<text x="1084" y="119" font-family="Georgia,serif" font-size="31">Quilter</text>
+<text x="196" y="154" font-size="16">Source schematic + PCB</text>
+<text x="640" y="154" font-size="16">Verified interchange files</text>
+<text x="1084" y="154" font-size="16">AI placement + routing</text>
+</g>
+<path d="M362 122H474 M450 110L474 122L450 134 M806 122H918 M894 110L918 122L894 134" fill="none" stroke="#011F5B" stroke-width="3"/>
+<g text-anchor="middle" font-size="13" fill="#52637B">
+<text x="418" y="94">CONVERT</text><text x="862" y="94">UPLOAD</text>
+</g>
+<path d="M1084 202V235H196V204 M184 220L196 204L208 220" fill="none" stroke="#990000" stroke-width="3"/>
+<rect x="388" y="218" width="504" height="34" rx="17" fill="#F4F6FA"/>
+<text x="640" y="241" text-anchor="middle" font-size="17" fill="#990000">Download candidate &#8594; translate &#8594; apply script</text>
+<text x="640" y="283" text-anchor="middle" font-size="14" fill="#52637B">Manual boundaries: Fusion export / script application and Quilter web upload / download.</text>
+</g>
+</svg>

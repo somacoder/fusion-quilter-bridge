@@ -1,0 +1,36 @@
+# User designs and generated conversion output must never enter this repository.
+/input/
+/from_quilter/
+/to_quilter/
+/to_fusion/
+/build/
+/dist/
+/private/
+*.log
+*.zip
+*.board_map.json
+*.eagle_map.json
+*.kicad_pcb
+*.kicad_sch
+*.kicad_pro
+*.kicad_prl
+*.kicad_sym
+*.kicad_mod
+*.kicad_dru
+*.brd
+*.sch
+*.lbr
+*.scr
+# Only the original synthetic fixture is publishable CAD.
+!/examples/roundtrip-demo/roundtrip-demo.brd
+!/examples/roundtrip-demo/roundtrip-demo.sch
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
+.vscode/
+.DS_Store
+Thumbs.db

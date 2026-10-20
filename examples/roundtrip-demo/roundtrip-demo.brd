@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE eagle SYSTEM "eagle.dtd">
+<eagle version="9.6.2">
+  <drawing>
+    <settings>
+      <setting alwaysvectorfont="no" />
+    </settings>
+    <grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="mm" altunit="mm" />
+    <layers>
+      <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes" />
+      <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="17" name="Pads" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="18" name="Vias" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="19" name="Unrouted" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="20" name="Dimension" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="21" name="tPlace" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="22" name="bPlace" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="23" name="tOrigins" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="24" name="bOrigins" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="25" name="tNames" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="26" name="bNames" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="27" name="tValues" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="28" name="bValues" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="29" name="tStop" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="30" name="bStop" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="31" name="tCream" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="32" name="bCream" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="39" name="tKeepout" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="40" name="bKeepout" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="41" name="tRestrict" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="42" name="bRestrict" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="43" name="vRestrict" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="44" name="Drills" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="45" name="Holes" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="46" name="Milling" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="47" name="Measures" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="48" name="Document" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="51" name="tDocu" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="52" name="bDocu" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="91" name="Nets" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="93" name="Pins" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="94" name="Symbols" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="95" name="Names" color="1" fill="1" visible="yes" active="yes" />
+      <layer number="96" name="Values" color="1" fill="1" visible="yes" active="yes" />
+    </layers>
+    <board>
+      <plain>
+        <wire x1="0" y1="0" x2="80" y2="0" width="0" layer="20" />
+        <wire x1="80" y1="0" x2="80" y2="60" width="0" layer="20" />
+        <wire x1="80" y1="60" x2="0" y2="60" width="0" layer="20" />
+        <wire x1="0" y1="60" x2="0" y2="0" width="0" layer="20" />
+      </plain>
+      <libraries>
+        <library name="bridge-demo">
+          <description>Original synthetic test geometry; not an electronic product.</description>
+          <packages>
+            <package name="DEMO_SMD">
+              <smd name="1" x="-2.54" y="0" dx="1.5" dy="2" layer="1" />
+              <smd name="2" x="2.54" y="0" dx="1.5" dy="2" layer="1" />
+              <wire x1="-1" y1="-1" x2="1" y2="-1" width="0.15" layer="21" />
+              <wire x1="1" y1="-1" x2="1" y2="1" width="0.15" layer="21" />
+              <wire x1="1" y1="1" x2="-1" y2="1" width="0.15" layer="21" />
+              <wire x1="-1" y1="1" x2="-1" y2="-1" width="0.15" layer="21" />
+              <text x="-1" y="2" size="1" layer="25">&gt;NAME</text>
+              <text x="-1" y="-3" size="1" layer="27">&gt;VALUE</text>
+              <wire x1="-1" y1="3.5" x2="2" y2="4" width="0.4" layer="41" />
+            </package>
+            <package name="DEMO_THT">
+              <pad name="1" x="-2.54" y="0" drill="0.8" diameter="1.8" shape="round" />
+              <pad name="2" x="2.54" y="0" drill="0.8" diameter="1.8" shape="round" />
+              <wire x1="-1" y1="-1" x2="1" y2="-1" width="0.15" layer="21" />
+              <wire x1="1" y1="-1" x2="1" y2="1" width="0.15" layer="21" />
+              <wire x1="1" y1="1" x2="-1" y2="1" width="0.15" layer="21" />
+              <wire x1="-1" y1="1" x2="-1" y2="-1" width="0.15" layer="21" />
+              <text x="-1" y="2" size="1" layer="25">&gt;NAME</text>
+              <text x="-1" y="-3" size="1" layer="27">&gt;VALUE</text>
+            </package>
+          </packages>
+          <symbols>
+            <symbol name="PASSIVE">
+              <wire x1="-2.54" y1="-1.27" x2="2.54" y2="-1.27" width="0.254" layer="94" />
+              <wire x1="2.54" y1="-1.27" x2="2.54" y2="1.27" width="0.254" layer="94" />
+              <wire x1="2.54" y1="1.27" x2="-2.54" y2="1.27" width="0.254" layer="94" />
+              <wire x1="-2.54" y1="1.27" x2="-2.54" y2="-1.27" width="0.254" layer="94" />
+              <pin name="A" x="-5.08" y="0" visible="off" length="short" direction="pas" />
+              <pin name="B" x="5.08" y="0" visible="off" length="short" direction="pas" rot="R180" />
+              <text x="-2.54" y="2.54" size="1.27" layer="95">&gt;NAME</text>
+              <text x="-2.54" y="-3.81" size="1.27" layer="96">&gt;VALUE</text>
+            </symbol>
+          </symbols>
+          <devicesets>
+            <deviceset name="DEMO_SMD" prefix="R" uservalue="yes">
+              <gates>
+                <gate name="G$1" symbol="PASSIVE" x="0" y="0" />
+              </gates>
+              <devices>
+                <device name="" package="DEMO_SMD">
+                  <connects>
+                    <connect gate="G$1" pin="A" pad="1" />
+                    <connect gate="G$1" pin="B" pad="2" />
+                  </connects>
+                  <technologies>
+                    <technology name="" />
+                  </technologies>
+                </device>
+              </devices>
+            </deviceset>
+            <deviceset name="DEMO_THT" prefix="R" uservalue="yes">
+              <gates>
+                <gate name="G$1" symbol="PASSIVE" x="0" y="0" />
+              </gates>
+              <devices>
+                <device name="" package="DEMO_THT">
+                  <connects>
+                    <connect gate="G$1" pin="A" pad="1" />
+                    <connect gate="G$1" pin="B" pad="2" />
+                  </connects>
+                  <technologies>
+                    <technology name="" />
+                  </technologies>
+                </device>
+              </devices>
+            </deviceset>
+          </devicesets>
+        </library>
+      </libraries>
+      <attributes />
+      <variantdefs />
+      <classes>
+        <class number="0" name="default" width="0" drill="0" />
+      </classes>
+      <designrules name="Synthetic demo">
+        <param name="layerSetup" value="(1*16)" />
+        <param name="mdWireWire" value="0.2mm" />
+        <param name="msWidth" value="0.2mm" />
+        <param name="msDrill" value="0.3mm" />
+        <param name="rlMinViaOuter" value="0.15mm" />
+        <param name="rlMinPadTop" value="0.25mm" />
+        <param name="rlMinPadBottom" value="0.25mm" />
+      </designrules>
+      <autorouter />
+      <elements>
+        <element name="R1" library="bridge-demo" package="DEMO_THT" value="test-01" x="-15" y="0" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-15.0" y="2.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-15.0" y="-3.0" size="1" layer="27" />
+        </element>
+        <element name="R2" library="bridge-demo" package="DEMO_SMD" value="test-02" x="-30" y="0" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-30.0" y="2.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-30.0" y="-3.0" size="1" layer="27" />
+        </element>
+        <element name="R3" library="bridge-demo" package="DEMO_SMD" value="test-03" x="-45" y="0" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-45.0" y="2.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-45.0" y="-3.0" size="1" layer="27" />
+        </element>
+        <element name="R4" library="bridge-demo" package="DEMO_THT" value="test-04" x="-15" y="12" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-15.0" y="14.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-15.0" y="9.0" size="1" layer="27" />
+        </element>
+        <element name="R5" library="bridge-demo" package="DEMO_SMD" value="test-05" x="-30" y="12" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-30.0" y="14.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-30.0" y="9.0" size="1" layer="27" />
+        </element>
+        <element name="R6" library="bridge-demo" package="DEMO_SMD" value="test-06" x="-45" y="12" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-45.0" y="14.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-45.0" y="9.0" size="1" layer="27" />
+        </element>
+        <element name="R7" library="bridge-demo" package="DEMO_THT" value="test-07" x="-15" y="24" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-15.0" y="26.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-15.0" y="21.0" size="1" layer="27" />
+        </element>
+        <element name="R8" library="bridge-demo" package="DEMO_SMD" value="test-08" x="-30" y="24" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-30.0" y="26.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-30.0" y="21.0" size="1" layer="27" />
+        </element>
+        <element name="R9" library="bridge-demo" package="DEMO_SMD" value="test-09" x="-45" y="24" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-45.0" y="26.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-45.0" y="21.0" size="1" layer="27" />
+        </element>
+        <element name="R10" library="bridge-demo" package="DEMO_THT" value="test-10" x="-15" y="36" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-15.0" y="38.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-15.0" y="33.0" size="1" layer="27" />
+        </element>
+        <element name="R11" library="bridge-demo" package="DEMO_SMD" value="test-11" x="-30" y="36" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-30.0" y="38.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-30.0" y="33.0" size="1" layer="27" />
+        </element>
+        <element name="R12" library="bridge-demo" package="DEMO_SMD" value="test-12" x="-45" y="36" smashed="yes" rot="R0">
+          <attribute name="NAME" x="-45.0" y="38.0" size="1" layer="25" />
+          <attribute name="VALUE" x="-45.0" y="33.0" size="1" layer="27" />
+        </element>
+      </elements>
+      <signals>
+        <signal name="NET_A">
+          <contactref element="R1" pad="1" />
+          <contactref element="R4" pad="2" />
+          <contactref element="R5" pad="1" />
+          <contactref element="R8" pad="2" />
+          <contactref element="R9" pad="1" />
+          <contactref element="R12" pad="2" />
+        </signal>
+        <signal name="NET_B">
+          <contactref element="R1" pad="2" />
+          <contactref element="R2" pad="1" />
+          <contactref element="R5" pad="2" />
+          <contactref element="R6" pad="1" />
+          <contactref element="R9" pad="2" />
+          <contactref element="R10" pad="1" />
+        </signal>
+        <signal name="NET_C">
+          <contactref element="R2" pad="2" />
+          <contactref element="R3" pad="1" />
+          <contactref element="R6" pad="2" />
+          <contactref element="R7" pad="1" />
+          <contactref element="R10" pad="2" />
+          <contactref element="R11" pad="1" />
+        </signal>
+        <signal name="NET_D">
+          <contactref element="R3" pad="2" />
+          <contactref element="R4" pad="1" />
+          <contactref element="R7" pad="2" />
+          <contactref element="R8" pad="1" />
+          <contactref element="R11" pad="2" />
+          <contactref element="R12" pad="1" />
+        </signal>
+      </signals>
+    </board>
+  </drawing>
+</eagle>
