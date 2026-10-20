@@ -3,5 +3,7 @@
 *.md text eol=lf
 *.yml text eol=lf
 *.svg text eol=lf
+*.sch text eol=lf
+*.brd text eol=lf
 *.cmd text eol=crlf
 *.png binary
