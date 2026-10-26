@@ -1,7 +1,9 @@
 """Synthetic custom-pad tests; run with KiCad 9 Python, skipped without pcbnew."""
 from pathlib import Path
 import sys
+import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 try:
@@ -15,6 +17,18 @@ if pcbnew is not None:
 
 @unittest.skipIf(pcbnew is None, "KiCad pcbnew required")
 class CustomPadTests(unittest.TestCase):
+    def test_outer_ground_layer_name_is_preserved(self):
+        from eagle_brd_to_kicad import BoardBuilder
+        root = Path(__file__).resolve().parents[1]
+        tree = ET.parse(root / "examples" / "roundtrip-demo" / "roundtrip-demo.brd")
+        tree.getroot().find("drawing/layers/layer[@number='16']").set("name", "GND")
+        with tempfile.TemporaryDirectory() as tmp:
+            board_path = Path(tmp) / "ground.brd"
+            tree.write(board_path)
+            builder = BoardBuilder(board_path, None, "ground", Path(tmp))
+            self.assertEqual(builder.board.GetLayerName(pcbnew.B_Cu), "GND")
+            self.assertEqual(builder.copper[16], pcbnew.B_Cu)
+
     def footprint(self):
         board = pcbnew.CreateEmptyBoard()
         fp = pcbnew.FOOTPRINT(board)

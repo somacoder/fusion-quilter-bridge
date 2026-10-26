@@ -215,7 +215,7 @@ class BoardBuilder:
             cmap[n] = getattr(pcbnew, f"In{i + 1}_Cu")
         for n, lid in cmap.items():
             name = self.layer_names.get(n)
-            if name and n not in (1, 16):
+            if name:
                 self.board.SetLayerName(lid, name)
         return cmap
 
