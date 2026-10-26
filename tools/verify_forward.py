@@ -523,6 +523,8 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
         ref_path = Path(td) / "official.kicad_pcb"
         run([cli10, "pcb", "import", "--format", "eagle", "-o", str(ref_path), str(src)])
         ref, ours = load_board(ref_path), load_board(pcb)
+        from custom_pad_copper import verified_custom_pads
+        custom_pads = verified_custom_pads(brd, pcb)
     ok = True
     R = {f.ref: f for f in ref.footprints}
     O = {f.ref: f for f in ours.footprints}
@@ -544,7 +546,8 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
                 bad.append(f"{refdes} pad {p.number!r}: no pad at the official position")
                 continue
             rem.remove(hit)
-            if (hit.shape, hit.kind, hit.drill, set(hit.layers)) != (p.shape, p.kind, p.drill, set(p.layers)) \
+            shape = p.shape if (refdes, p.number) in custom_pads else hit.shape
+            if (shape, hit.kind, hit.drill, set(hit.layers)) != (p.shape, p.kind, p.drill, set(p.layers)) \
                     or abs((hit.angle - p.angle + 90) % 180 - 90) > 0.01:
                 bad.append(f"{refdes} pad {p.number!r}: shape/type/drill/layers/angle differ "
                            f"{(hit.shape, hit.kind, hit.drill, hit.layers, hit.angle)} vs "
@@ -575,6 +578,8 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
     if size_diff:
         print(f"INFO  {size_diff} pad size(s) differ from KiCad's importer by design: EAGLE restring/'use diameter' "
               f"rules give the real copper size Fusion 360 manufactures")
+    if custom_pads:
+        print(f"PASS  {len(custom_pads)} custom pads: copper equals EAGLE pad + package polygon unions")
     renamed = sorted((o, x) for o, x in net_map.items() if unescape(o) != unescape(x))
     if renamed:
         ex = ", ".join(f"{o!r}->{x!r}" for o, x in renamed[:3])
@@ -738,6 +743,12 @@ def main(argv=None) -> int:
         for v in drc.get("violations", []) + drc.get("unconnected_items", []):
             kinds[(v["severity"], v["type"])] += 1
         bad_outline = [v for v in drc.get("violations", []) if v["type"] == "invalid_outline"]
+        shorts = [v for v in drc.get("violations", []) if v["type"] == "shorting_items"]
+        if shorts:
+            ok = False
+            print(f"FAIL  board DRC: {len(shorts)} copper shorts (not waived as unrouted connections)")
+            for v in shorts[:20]:
+                print("   ", v["description"], "|", "; ".join(i["description"] for i in v["items"]))
         if bad_outline:
             ok = False
             print(f"FAIL  board outline: KiCad cannot build a closed, non-intersecting outline (Quilter needs one): "

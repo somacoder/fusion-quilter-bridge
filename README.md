@@ -52,6 +52,12 @@ is involved. Uploading a board to Quilter is a separate, deliberate step.
 
 The Windows launchers locate standard per-user and system KiCad installations.
 No `pip install` is needed. Pure-Python utilities are also tested with Python 3.11.
+EAGLE footprint copper polygons that contain exactly one simple SMD pad are
+converted to KiCad custom-pad primitives, preserving the original copper union
+and pin number. Ambiguous ownership is an error, not a guessed net assignment.
+The verifier checks the copper union independently against the original EAGLE
+footprint, and copper shorts now fail forward verification rather than being
+waived as ordinary pre-routing errors. Unrouted connections are still expected.
 Do **not** replace KiCad 9's Python with KiCad 10's `pcbnew`; the latter has caused
 initialization dialogs in headless use.
 

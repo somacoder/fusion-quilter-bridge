@@ -810,6 +810,14 @@ def main(argv=None) -> int:
             rc = fusion_to_quilter.main(["--sch", str(src2 / f"{name}.sch"), "--brd", str(src2 / f"{name}.brd"),
                                          "--out", str(tq2)])
             ok = rc == 0
+            if rc == 1:
+                verification = (tq2 / name / "logs" / "verify.log").read_text(encoding="utf-8")
+                failures = [line for line in verification.splitlines() if line.startswith("FAIL")]
+                if len(failures) == 1 and failures[0].startswith("FAIL  board DRC:") \
+                        and "copper shorts" in failures[0]:
+                    ok = True
+                    print("PASS  intentionally crossing synthetic tracks rejected by production DRC gate; "
+                          "translation checks passed. Continuing return-path test, not a routing approval.")
             print(f"\n{'PASS' if ok else 'FAIL'}  Fusion_to_Quilter on the routed board: exit code {rc}")
             inbox = scratch / "from_quilter_3"
             lay2 = inbox / f"{name}_layout2.kicad_pcb"

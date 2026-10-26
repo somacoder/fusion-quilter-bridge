@@ -33,6 +33,7 @@ import pcbnew
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from eagle_common import (Rules, arc_mid_and_center, clear_dir, dim, kicad_net_name, kicad_ref_map,  # noqa: E402
                           mm_to_nm, outline_spurs, parse_rot)
+from custom_pad_copper import merge_pad_copper
 
 FROM_MM = mm_to_nm  # pcbnew.FromMM truncates the float product (64.77 mm -> 64769999 nm)
 
@@ -174,7 +175,7 @@ class FootprintSource:
         fp = self.io.FootprintLoad(self.files[key], package)
         if fp is None:
             raise KeyError(f"package {package} not found in {lib}")
-        return fp, self.packages[(key[0], key[1], package)]
+        return pcbnew.FOOTPRINT(fp), self.packages[(key[0], key[1], package)]
 
 
 class BoardBuilder:
@@ -395,11 +396,13 @@ class BoardBuilder:
             nick, item = fpid.split(":", 1) if ":" in fpid else (self.project, fpid)
             fp.SetFPID(pcbnew.LIB_ID(nick, item))
             self.fix_pads(fp, pkg)
+            self.counts["custom copper pads"] += merge_pad_copper(fp)
             if fpid not in self.lib_fps:
                 lib_copy, _ = self.src.load(e.get("library"), e.get("library_urn"), e.get("package"))
                 lib_copy.SetFPID(pcbnew.LIB_ID(nick, item))
                 self.package_extras(lib_copy, pkg, name, track=False)
                 self.fix_pads(lib_copy, pkg)
+                merge_pad_copper(lib_copy)
                 self.lib_fps[fpid] = (item, lib_copy)
             fp.SetReference(name)
             # empty values become "~", exactly what KiCad's netlister / Update PCB from Schematic produce

@@ -52,3 +52,14 @@ library geometry, unknown commands and layer visibility restoration.
 GitHub Actions runs the standard-library tests and release inventory check.
 KiCad integration tests are run separately; CI intentionally does not imply they
 ran on every commit.
+# Custom-pad copper regression
+
+With KiCad 9's Python, `python -m unittest discover -s tests -v` also exercises
+synthetic polygon-pad unions, movement, rotation, flipping, ambiguous ownership,
+unattached copper and partially contained anchors. Without pcbnew these tests
+are explicitly skipped; the pure-Python regressions still run.
+
+Forward verification rejects copper shorts. The round-trip stand-in deliberately
+draws crossing tracks: its second forward pass must either pass normally or fail
+only that physical shorts gate while all translation checks pass. It then tests
+the return path using the generated files. This is not routing/DRC approval.

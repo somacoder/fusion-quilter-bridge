@@ -24,11 +24,11 @@ FILES = (
     "docs/assets/workflow.svg", "docs/assets/social-card.png",
     "examples/roundtrip-demo/README.md", "examples/roundtrip-demo/generate.py",
     "examples/roundtrip-demo/roundtrip-demo.sch", "examples/roundtrip-demo/roundtrip-demo.brd",
-    "tests/test_bridge.py",
+    "tests/test_bridge.py", "tests/test_custom_pad_copper.py",
     "tools/eagle_brd_to_kicad.py", "tools/eagle_common.py", "tools/eagle_sch_to_kicad.py",
     "tools/fusion_to_quilter.py", "tools/kicad_pcb_reader.py", "tools/kicad_to_fusion.py",
     "tools/quilter_to_fusion.py", "tools/selftest_roundtrip.py", "tools/verify_forward.py",
-    "tools/check_release.py",
+    "tools/check_release.py", "tools/custom_pad_copper.py",
 )
 RUNTIME = {"input", "from_quilter", "to_quilter", "to_fusion", "build", "dist",
            ".git", ".venv", ".vscode", "__pycache__", ".pytest_cache"}
