@@ -13,12 +13,20 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from eagle_common import det_uuid, mm_to_nm, parse_rot
 from selftest_roundtrip import ScriptRunner, compare_rest, compare_script
+from verify_forward import copper_layer_map
 
 DEMO = ROOT / "examples" / "roundtrip-demo"
 BOARD = DEMO / "roundtrip-demo.brd"
 
 
 class PublicFixtureTests(unittest.TestCase):
+    def test_identical_outer_pours_do_not_collapse_layer_mapping(self):
+        votes = {"F.Cu": {"F.Cu": 1, "B.Cu": 1},
+                 "B.Cu": {"F.Cu": 1, "B.Cu": 1},
+                 "In1.Cu": {"In2.Cu": 3}}
+        self.assertEqual(copper_layer_map(votes),
+                         {"F.Cu": "F.Cu", "B.Cu": "B.Cu", "In1.Cu": "In2.Cu"})
+
     def test_exact_dimensions_and_net_membership(self):
         board = ET.parse(BOARD).getroot().find("drawing/board")
         sch = ET.parse(DEMO / "roundtrip-demo.sch").getroot().find("drawing/schematic")

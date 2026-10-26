@@ -507,6 +507,14 @@ def milling_outline_check(ref, ours, mill, tol=15_000, step=100_000):
     return not bad, n, bad
 
 
+def copper_layer_map(votes):
+    mapping = {layer: max(candidates, key=candidates.get)
+               for layer, candidates in votes.items() if candidates}
+    # Outer layers are invariant; identical top/bottom pours must not collapse them.
+    mapping.update({"F.Cu": "F.Cu", "B.Cu": "B.Cu"})
+    return mapping
+
+
 def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
     """Import the original .brd with KiCad's official EAGLE importer (kicad-cli >= 10) and compare
     footprint placement/pads, outline, tracks, vias and copper zones with our board (read with
@@ -614,9 +622,7 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
         if len(z.layers) == 1:
             for l in zby.get(zkey(z, nmap(z.net)), []):
                 votes[z.layers[0]][l] += 1
-    lmap = {ol: max(c, key=c.get) for ol, c in votes.items()}
-    for l in ("F.Cu", "B.Cu"):
-        lmap.setdefault(l, l)
+    lmap = copper_layer_map(votes)
     if len(set(lmap.values())) != len(lmap):
         ok = False
         print(f"FAIL  copper layers: no 1:1 correspondence with the official import: {lmap}")
