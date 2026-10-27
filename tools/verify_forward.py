@@ -660,8 +660,9 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
     def items(b):
         o = b is ref
         rules = Rules(ET.parse(brd).getroot().find("drawing/board"))
+        # Zero-length segments carry no copper; the translator drops them, so ignore them on both sides.
         tr = {(tkey(t, nmap(t.net) if o else unescape(t.net)), lmap.get(t.layer, t.layer) if o else t.layer)
-              for t in b.tracks}
+              for t in b.tracks if _um(t.start) != _um(t.end)}
         vi = {(_um((v.x, v.y)), v.drill,
                round(rules.via_diameter(v.drill / 1e6, v.size / 1e6) * 1e6) if o else v.size,
                zlayers(v.layers, b), nmap(v.net) if o else unescape(v.net)) for v in b.vias}
