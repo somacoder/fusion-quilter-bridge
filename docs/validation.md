@@ -22,6 +22,20 @@ Importer comparisons generally use micrometre-scale geometry tolerance.
 Smashed text comparisons in the script model allow 5 nm for numerical rounding.
 Canonical XML equality ignores serialization syntax differences, not design data.
 
+Zone comparisons normalize repeated closure vertices, start vertex and winding,
+but preserve edge order and separate rings. Via comparisons include effective
+Fusion diameters after restring and layer spans, not just drill positions.
+`--match-via-rules` is an explicit exception to rule preservation: only the two
+outer-via annulus parameters change, and the script loads the emitted `.dru`.
+Fast regressions cover these cases and candidate ZIP validation. Synthetic routing
+uses annuli large enough for the fixture's original rules; undersized via handling
+is covered separately by the rule-matching regression.
+
+The separate `--match-pour-rules` option changes only the global thermal-isolate
+parameter to a common candidate thermal gap. Nonuniform per-zone gaps are rejected.
+Outline equality is not filled-copper equality: native repouring can disconnect
+parts even when the downloaded board's cached fill reports complete connectivity.
+
 ## Run it yourself
 
 ```powershell

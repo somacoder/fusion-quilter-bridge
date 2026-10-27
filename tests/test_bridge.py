@@ -6,20 +6,99 @@ import io
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
+import zipfile
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
-from eagle_common import det_uuid, mm_to_nm, parse_rot
+from eagle_common import Rules, det_uuid, mm_to_nm, parse_rot
+from kicad_to_fusion import Patch
+from browser_download import browser_code, validate_archive
 from selftest_roundtrip import ScriptRunner, compare_rest, compare_script
-from verify_forward import copper_layer_map
+from verify_forward import copper_layer_map, zone_outline_key
 
 DEMO = ROOT / "examples" / "roundtrip-demo"
 BOARD = DEMO / "roundtrip-demo.brd"
 
 
 class PublicFixtureTests(unittest.TestCase):
+    def test_pour_thermal_rule_matching_is_explicit_and_uniform(self):
+        patch = Patch.__new__(Patch)
+        patch.board_el = ET.parse(BOARD).getroot().find("drawing/board")
+        patch.rules = Rules(patch.board_el)
+        patch.k = SimpleNamespace(zones=[SimpleNamespace(rule_area=False,
+                                   opts={"connect": "thermal", "thermal_gap": 25400})])
+        before = dict(patch.rules.p)
+        patch.notes = []
+        patch.pour_rules_changed = False
+        patch.match_pour_rules()
+        self.assertTrue(patch.pour_rules_changed)
+        self.assertEqual(patch.rules.get("slThermalIsolate"), 0.0254)
+        for key in before.keys() - {"slThermalIsolate"}:
+            self.assertEqual(before[key], patch.rules.p[key])
+        patch.k.zones.append(SimpleNamespace(rule_area=False,
+                                            opts={"connect": "thermal", "thermal_gap": 254000}))
+        with self.assertRaisesRegex(ValueError, "per-zone"):
+            patch.match_pour_rules()
+    def test_browser_download_archive_validation(self):
+        def archive(names):
+            stream = io.BytesIO()
+            with zipfile.ZipFile(stream, "w") as target:
+                for name in names:
+                    target.writestr(name, "(kicad_pcb)")
+            return stream.getvalue()
+        validate_archive(archive(["candidate.kicad_pcb", "candidate.kicad_pro"]))
+        for names in ([], ["candidate.kicad_pro"], ["a.kicad_pcb", "b.kicad_pcb"]):
+            with self.assertRaises(ValueError):
+                validate_archive(archive(names))
+        with self.assertRaises(zipfile.BadZipFile):
+            validate_archive(b"not a zip")
+        code = browser_code("http://127.0.0.1:8769/example")
+        self.assertIn('"http://127.0.0.1:8769/example"', code)
+        self.assertNotIn("ENDPOINT", code)
+
+    def test_explicit_via_rule_matching_preserves_pads(self):
+        patch = Patch.__new__(Patch)
+        patch.board_el = ET.parse(BOARD).getroot().find("drawing/board")
+        patch.board_el.find("designrules/param[@name='rlMinViaOuter']").set("value", "0.254mm")
+        patch.rules = Rules(patch.board_el)
+        patch.k = SimpleNamespace(vias=[SimpleNamespace(size=700700, drill=350350),
+                                       SimpleNamespace(size=897573, drill=547223)])
+        before = dict(patch.rules.p)
+        patch.notes = []
+        patch.via_rules_changed = False
+        patch.match_via_rules()
+        self.assertTrue(patch.via_rules_changed)
+        self.assertEqual(patch.rules.get("rlMinViaOuter"), 0.175175)
+        self.assertEqual(patch.rules.ratio("rvViaOuter", 1), 0)
+        for key in before.keys() - {"rlMinViaOuter", "rvViaOuter"}:
+            self.assertEqual(before[key], patch.rules.p[key])
+        for via in patch.k.vias:
+            self.assertAlmostEqual(patch.rules.via_diameter(via.drill / 1e6, via.size / 1e6),
+                                   via.size / 1e6)
+
+    def test_invalid_annulus_is_rejected(self):
+        patch = Patch.__new__(Patch)
+        patch.k = SimpleNamespace(vias=[SimpleNamespace(size=300000, drill=350000)])
+        with self.assertRaisesRegex(ValueError, "annular ring"):
+            patch.match_via_rules()
+
+    def test_zone_outline_closure_and_winding_are_equivalent(self):
+        ring = [(0, 0), (1000000, 0), (1000000, 1000000), (0, 1000000)]
+        expected = zone_outline_key([ring])
+        self.assertEqual(expected, zone_outline_key([ring + ring[:1]]))
+        self.assertEqual(expected, zone_outline_key([ring[2:] + ring[:2]]))
+        self.assertEqual(expected, zone_outline_key([ring[::-1]]))
+        self.assertEqual(expected, zone_outline_key([[ring[0]] + ring]))
+
+    def test_zone_outline_preserves_edges_and_holes(self):
+        ring = [(0, 0), (1000000, 0), (1000000, 1000000), (0, 1000000)]
+        crossed = [ring[0], ring[2], ring[1], ring[3]]
+        self.assertNotEqual(zone_outline_key([ring]), zone_outline_key([crossed]))
+        self.assertNotEqual(zone_outline_key([ring]), zone_outline_key([ring, ring]))
+
     def test_identical_outer_pours_do_not_collapse_layer_mapping(self):
         votes = {"F.Cu": {"F.Cu": 1, "B.Cu": 1},
                  "B.Cu": {"F.Cu": 1, "B.Cu": 1},
@@ -111,6 +190,13 @@ class ScriptRegressionTests(unittest.TestCase):
     def test_unknown_command_is_caught(self):
         runner = ScriptRunner(BOARD).run(self.script("NOT_A_COMMAND;"))
         self.assertTrue(any("unknown command" in e for e in runner.errors), runner.errors)
+
+    def test_drc_load_applies_emitted_rules(self):
+        dru = self.dir / "test.dru"
+        dru.write_text("rlMinViaOuter = 0.175175mm\nrvViaOuter = 0\n", encoding="utf-8")
+        runner = ScriptRunner(BOARD).run(self.script(f"DRC LOAD '{dru}';"))
+        self.assertEqual(runner.errors, [])
+        self.assertEqual(Rules(runner.board).get("rlMinViaOuter"), 0.175175)
 
 
 if __name__ == "__main__":

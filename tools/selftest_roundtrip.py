@@ -95,11 +95,11 @@ class Router:
         self.stats["arcs"] += 1
 
     def via(self, at, net):
-        small = self.stats["vias"] % 4 == 3  # smaller than Fusion's restring rules: expect the 'enlarged' warning
+        small = self.stats["vias"] % 4 == 3
         v = self.p.PCB_VIA(self.b)
         v.SetPosition(self.v(*at)), v.SetLayerPair(self.p.F_Cu, self.p.B_Cu), v.SetNet(net)
         v.SetDrill(300_000 if small else 350_000)
-        v.SetWidth(600_000 if small else 800_000)
+        v.SetWidth(850_000 if small else 900_000)
         self.b.Add(v)
         self.stats["vias"] += 1
 
@@ -384,6 +384,19 @@ class ScriptRunner:
 
     def do_set(self, _t, _c):
         pass
+
+    def do_drc(self, t, cmd):
+        if len(t) != 2 or t[0][1].upper() != "LOAD":
+            self.err(f"unsupported DRC command: {cmd}")
+            return
+        rules = self.board.find("designrules")
+        params = {p.get("name"): p for p in rules.findall("param")}
+        for line in Path(t[1][1]).read_text(encoding="utf-8").splitlines():
+            key, value = (part.strip() for part in line.split("=", 1))
+            param = params.get(key)
+            if param is None:
+                param = ET.SubElement(rules, "param", name=key)
+            param.set("value", value)
 
     def do_ratsnest(self, _t, _c):
         pass

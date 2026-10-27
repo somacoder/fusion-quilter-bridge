@@ -105,8 +105,9 @@ wires, smashed text, rotations, flips, copper arcs, vias and pours.
    run the printed `SCRIPT` command, then inspect the result and run RATSNEST/DRC.
 
 See the [full workflow](docs/workflow.md) for file selection, snapshots, automation
-boundaries and return-path details. **The GUI export/import and Quilter web steps
-are still manual**; this project does not automate your account or submit jobs.
+boundaries and return-path details. GUI export/import and web uploads still require
+interaction. An optional loopback receiver supports browser-agent downloads without
+the Save dialog; this project does not submit jobs or bypass account restrictions.
 
 ## What is checked
 

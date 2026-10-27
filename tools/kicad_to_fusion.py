@@ -173,6 +173,57 @@ class Patch:
         self.scr: list[str] = []
         self.moved: set[str] = set()
         self.place_lines: list[str] = []
+        self.via_rules_changed = False
+        self.pour_rules_changed = False
+
+    def match_pour_rules(self):
+        gaps = {z.opts["thermal_gap"] for z in self.k.zones
+                if not z.rule_area and z.opts.get("connect", "thermal") == "thermal"
+                and "thermal_gap" in z.opts}
+        if not gaps:
+            return
+        if len(gaps) != 1:
+            raise ValueError("Different per-zone thermal gaps cannot share one Fusion thermal-isolate rule")
+        gap = gaps.pop()
+        if gap <= 0:
+            raise ValueError("Cannot preserve a non-positive thermal gap")
+        if abs(self.rules.get("slThermalIsolate", 0.254) * NM - gap) <= 1:
+            return
+        rules = self.board_el.find("designrules")
+        if rules is None:
+            raise ValueError("Cannot adjust missing Fusion design rules")
+        param = rules.find("param[@name='slThermalIsolate']")
+        if param is None:
+            param = ET.SubElement(rules, "param", name="slThermalIsolate")
+        param.set("value", fmt(gap) + "mm")
+        self.rules = Rules(self.board_el)
+        self.pour_rules_changed = True
+        self.notes.append(f"Global thermal-isolate rule changed to {fmt(gap)} mm to match the routed zones. "
+                          "Repour and inspect thermal connections before manufacture.")
+
+    def match_via_rules(self):
+        if not self.k.vias:
+            return
+        rings = [(v.size - v.drill) / 2 for v in self.k.vias]
+        if min(rings) <= 0:
+            raise ValueError("Cannot preserve vias with a non-positive annular ring")
+        if not any(self.rules.via_diameter(v.drill / NM, v.size / NM) * NM > v.size + 1
+                   for v in self.k.vias):
+            return
+        rules = self.board_el.find("designrules")
+        if rules is None:
+            raise ValueError("Cannot adjust missing Fusion design rules")
+        values = {"rlMinViaOuter": fmt(min(rings)) + "mm", "rvViaOuter": "0"}
+        for key, value in values.items():
+            param = next((p for p in rules.findall("param") if p.get("name") == key), None)
+            if param is None:
+                param = ET.SubElement(rules, "param", name=key)
+            param.set("value", value)
+        self.rules = Rules(self.board_el)
+        self.via_rules_changed = True
+        self.notes.append(f"Via-only restring rules changed to preserve routed diameters: "
+                          f"minimum outer annulus {fmt(min(rings))} mm, ratio 0. "
+                          "Confirm this annulus with the fabricator before manufacture.")
 
     # ------------------------------------------------------------------ helpers
     def signal_of(self, net: str, what: str):
@@ -556,6 +607,17 @@ class Patch:
             lines.append(f"DISPLAY ?? {self.needed_layers()};")
         for sig, n, z in new:
             o = z.opts
+            if o.get("connect", "thermal") == "thermal":
+                gap = o.get("thermal_gap")
+                if gap is not None and abs(gap - self.rules.get("slThermalIsolate", 0.254) * NM) > 1000:
+                    self.warnings.append(f"pour of {sig}: thermal gap differs from Fusion's global rule; "
+                                         "use --match-pour-rules for a common gap or inspect in Fusion")
+                spoke = o.get("thermal_bridge_width")
+                actual_spoke = max(o.get("min_thickness", 254_000), round(self.rules.min_width * NM))
+                if spoke is not None and abs(spoke - actual_spoke) > 1000:
+                    self.warnings.append(f"pour of {sig}: KiCad thermal spoke width {fmt(spoke)} mm "
+                                         f"differs from Fusion's derived {fmt(actual_spoke)} mm; "
+                                         "inspect pad connections after repour")
             fill_hatch = o.get("fill") == "hatch"
             width = o.get("hatch_thickness" if fill_hatch else "min_thickness", 254_000)
             rank = min(6, max(1, 7 - z.priority))
@@ -637,6 +699,13 @@ class Patch:
                "# RIPUP and MOVE only act on visible layers, so copper and origin layers are shown while it runs;",
                "# the finest grid keeps typed coordinates exact.  Grid and visible layers are restored at the end.",
                "", "GRID MM FINEST;", f"DISPLAY ?? {needed};", "SET WIRE_BEND 2;", "SET OPTIMIZING OFF;"]
+        if self.via_rules_changed or self.pour_rules_changed:
+            dru = out_dir / f"{name}.dru"
+            params = self.board_el.findall("designrules/param")
+            dru.write_text("\n".join(f"{p.get('name')} = {p.get('value')}" for p in params) + "\n",
+                           encoding="utf-8")
+            hdr += ["# Load explicitly matched design rules before drawing copper.",
+                    f"DRC LOAD {q(str(dru.resolve()))};"]
         tail = ["", "SET OPTIMIZING ON;", "RATSNEST;"] + ([f"DISPLAY NONE ?? {shown};"] if shown else []) + \
                ["GRID LAST;", ""]
         scr.write_text("\n".join(hdr + self.scr + tail), encoding="utf-8", newline="\r\n")
@@ -650,8 +719,16 @@ def main(argv=None) -> int:
     ap.add_argument("--map", type=Path, required=True, help="<project>.board_map.json from eagle_brd_to_kicad.py")
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--name", help="output base name (default: <brd name>_routed)")
+    ap.add_argument("--match-via-rules", action="store_true",
+                    help="explicitly adjust via-only restring rules to preserve routed via diameters")
+    ap.add_argument("--match-pour-rules", action="store_true",
+                    help="match a common zone thermal gap using Fusion's global thermal-isolate rule")
     a = ap.parse_args(argv)
     p = Patch(a.pcb, a.brd, json.loads(a.map.read_text(encoding="utf-8")))
+    if a.match_via_rules:
+        p.match_via_rules()
+    if a.match_pour_rules:
+        p.match_pour_rules()
     p.run()
     brd, scr = p.write(a.out_dir, a.name or f"{a.brd.stem}_routed", a.pcb)
     for w in p.warnings:

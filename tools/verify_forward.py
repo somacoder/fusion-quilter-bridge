@@ -28,7 +28,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from eagle_common import arc_mid_and_center, kicad_net_name, kicad_ref_map, outline_spurs, parse_rot  # noqa: E402
+from eagle_common import Rules, arc_mid_and_center, kicad_net_name, kicad_ref_map, outline_spurs, parse_rot  # noqa: E402
 from kicad_pcb_reader import load_board  # noqa: E402
 
 
@@ -144,6 +144,25 @@ def find_kicad10_cli(explicit: str | None = None) -> str | None:
 
 def _um(p):
     return (round(p[0] / 1000), round(p[1] / 1000))
+
+
+def zone_outline_key(outlines):
+    rings = []
+    for outline in outlines:
+        points = []
+        for point in map(_um, outline):
+            if not points or point != points[-1]:
+                points.append(point)
+        if len(points) > 1 and points[0] == points[-1]:
+            points.pop()
+        if points:
+            variants = []
+            for ring in (points, points[::-1]):
+                start = min(ring)
+                variants.extend(tuple(ring[i:] + ring[:i])
+                                for i, point in enumerate(ring) if point == start)
+            rings.append(min(variants))
+    return tuple(sorted(rings))
 
 
 def _mm_nm(v) -> int:
@@ -604,7 +623,7 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
         return tuple(sorted([_um(t.start), _um(t.end)])), _um(t.mid) if t.mid else None, t.width, net
 
     def zkey(z, net):
-        return net, z.rule_area, tuple(sorted(_um(p) for o in z.outlines for p in o))
+        return net, z.rule_area, zone_outline_key(z.outlines)
 
     ours_cu = _copper_layer_names(ours)
     votes = defaultdict(lambda: defaultdict(int))
@@ -640,9 +659,12 @@ def official_geometry(cli10: str, brd: Path, pcb: Path) -> bool:
 
     def items(b):
         o = b is ref
+        rules = Rules(ET.parse(brd).getroot().find("drawing/board"))
         tr = {(tkey(t, nmap(t.net) if o else unescape(t.net)), lmap.get(t.layer, t.layer) if o else t.layer)
               for t in b.tracks}
-        vi = {(_um((v.x, v.y)), v.drill, nmap(v.net) if o else unescape(v.net)) for v in b.vias}
+        vi = {(_um((v.x, v.y)), v.drill,
+               round(rules.via_diameter(v.drill / 1e6, v.size / 1e6) * 1e6) if o else v.size,
+               zlayers(v.layers, b), nmap(v.net) if o else unescape(v.net)) for v in b.vias}
         edge = {("line", tuple(sorted((_um(pr[1]), _um(pr[2]))))) if pr[0] == "seg" else
                 (s.kind, tuple(sorted(_um(p) for p in s.pts)))
                 for s in b.shapes if s.layer == "Edge.Cuts" for pr in _shape_prims(s)}

@@ -74,6 +74,10 @@ def main(argv=None) -> int:
     ap.add_argument("--input", type=Path, default=ROOT / "input",
                     help="folder with the current Fusion export (to warn if it changed since it was sent)")
     ap.add_argument("--no-verify", action="store_true")
+    ap.add_argument("--match-via-rules", action="store_true",
+                    help="adjust via-only Fusion restring rules to preserve routed via diameters")
+    ap.add_argument("--match-pour-rules", action="store_true",
+                    help="match a common zone thermal gap using Fusion's global thermal-isolate rule")
     a = ap.parse_args(argv)
 
     pcb = routed_board(a.routed, a.from_quilter)
@@ -90,8 +94,13 @@ def main(argv=None) -> int:
     out_name = pcb.stem if pcb.stem != name else f"{name}_routed"
     print(f"Quilter board : {pcb}\nFusion design : {name} (as sent: {brd})\nOutput        : {a.out}\n")
 
-    rc = kicad_to_fusion.main([str(pcb), "--brd", str(brd), "--map", str(bmap), "--out-dir", str(a.out),
-                               "--name", out_name])
+    args = [str(pcb), "--brd", str(brd), "--map", str(bmap), "--out-dir", str(a.out),
+            "--name", out_name]
+    if a.match_via_rules:
+        args.append("--match-via-rules")
+    if a.match_pour_rules:
+        args.append("--match-pour-rules")
+    rc = kicad_to_fusion.main(args)
     if rc:
         return rc
     ok = True

@@ -28,7 +28,7 @@ FILES = (
     "tools/eagle_brd_to_kicad.py", "tools/eagle_common.py", "tools/eagle_sch_to_kicad.py",
     "tools/fusion_to_quilter.py", "tools/kicad_pcb_reader.py", "tools/kicad_to_fusion.py",
     "tools/quilter_to_fusion.py", "tools/selftest_roundtrip.py", "tools/verify_forward.py",
-    "tools/check_release.py", "tools/custom_pad_copper.py",
+    "tools/check_release.py", "tools/custom_pad_copper.py", "tools/browser_download.py",
 )
 RUNTIME = {"input", "from_quilter", "to_quilter", "to_fusion", "build", "dist",
            ".git", ".venv", ".vscode", "__pycache__", ".pytest_cache"}
